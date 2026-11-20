@@ -1,6 +1,6 @@
 /* Service worker ของตัวห่อ — แคชเฉพาะหน้าเปิดแอปและไอคอน (ไม่แคชข้อมูลจาก Apps Script)
    เปลี่ยนเลข VERSION ทุกครั้งที่แก้ไฟล์ในตัวห่อ เพื่อให้เครื่องผู้ใช้โหลดของใหม่ */
-var VERSION = 'map-sw2-v1';
+var VERSION = 'map-sw2-v3';
 var SHELL = ['./', './index.html', './manifest.json', './icons/icon-192.png', './icons/icon-512.png', './icons/maskable-512.png', './icons/apple-touch-icon.png', './icons/favicon-32.png'];
 
 self.addEventListener('install', function (e) {

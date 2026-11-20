@@ -30,5 +30,6 @@ map-sw2/
 ## ถ้าเปลี่ยน deployment ของ Apps Script
 แก้ `APP_URL` ใน `index.html` → เปลี่ยนเลข `VERSION` ใน `sw.js` → Commit → Push · ไอคอนที่ติดตั้งไว้แล้วจะใช้ลิงก์ใหม่เองเมื่อเปิดครั้งถัดไป
 
-## ข้อกำหนดฝั่ง Apps Script
-`doGet` ต้องตั้ง `setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL)` (Code.gs รอบ 13 ตั้งไว้แล้ว) มิฉะนั้นหน้าแอปจะไม่แสดงใน iframe
+## โหมดการเปิดแอป (`MODE` ใน index.html)
+- `redirect` (ค่าตั้งต้น) — แสดง splash แล้วพาไปหน้าแอปเต็มหน้าต่าง ใช้ได้ทุกเบราว์เซอร์
+- `iframe` — ฝังแอปในกรอบ ดูเป็นแอปมากกว่า แต่ Google ตอบ **401** เมื่อเบราว์เซอร์บล็อกคุกกี้ข้ามไซต์ (Safari/iPhone ค่าเริ่มต้น, Chrome โหมดไม่ระบุตัวตน) และต้องตั้ง `ALLOWALL` ใน `doGet` ของ Apps Script
