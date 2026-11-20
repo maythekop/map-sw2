@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<!-- ═══════════════════════════════════════════════════════════════
+     ตัวห่อ PWA — ระบบติดตามโครงการก่อสร้างทางหลวง สท.2 (Map_v.1)
+     ★ ค่าเดียวที่ต้องแก้: APP_URL ด้านล่าง = ลิงก์ /exec ของแอป (เวอร์ชัน Production)
+       ลิงก์นี้เปิดเผยต่อสาธารณะใน repo (GitHub Pages ต้องเป็น public) — แอปมี PIN/บัตรผ่านคุมอยู่แล้ว
+     ═══════════════════════════════════════════════════════════════ -->
+<script>
+  var APP_URL = 'PASTE_EXEC_URL_HERE';   // ← วางลิงก์เต็ม เช่น https://script.google.com/macros/s/AKfycbwZ_lhuot…/exec (เวอร์ชัน 180)
+</script>
+<title>ติดตามโครงการ สท.2</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="description" content="ระบบติดตามโครงการก่อสร้างทางหลวง สำนักก่อสร้างทางที่ 2 กรมทางหลวง">
+<meta name="theme-color" content="#0A2A4A">
+<meta name="color-scheme" content="dark light">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ติดตามโครงการ">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
+<meta name="robots" content="noindex,nofollow">
+<style>
+  :root{--bg:#061B33;--bg2:#0E3A6B;--fg:#EAF2FB;--muted:#9FB3C8;--acc:#F5B833;--ok:#2ED3A3}
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--fg);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Sarabun","Noto Sans Thai",sans-serif;overflow:hidden}
+  #app{position:fixed;inset:0;border:0;width:100%;height:100%;background:#0b1526;opacity:0;transition:opacity .35s ease}
+  #app.on{opacity:1}
+  #splash{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;
+    background:radial-gradient(120% 90% at 50% 30%,var(--bg2) 0%,var(--bg) 70%);padding:env(safe-area-inset-top) 24px env(safe-area-inset-bottom);
+    transition:opacity .4s ease,visibility .4s}
+  #splash.off{opacity:0;visibility:hidden}
+  #splash img{width:112px;height:112px;border-radius:26px;box-shadow:0 18px 40px rgba(0,0,0,.45);animation:pop .6s cubic-bezier(.2,.9,.3,1.2)}
+  @keyframes pop{from{transform:scale(.7);opacity:0}to{transform:scale(1);opacity:1}}
+  #splash h1{margin:6px 0 0;font-size:20px;font-weight:700;letter-spacing:.2px;text-align:center}
+  #splash p{margin:0;color:var(--muted);font-size:13px;text-align:center}
+  .bar{width:160px;height:4px;border-radius:4px;background:rgba(255,255,255,.12);overflow:hidden;margin-top:6px}
+  .bar i{display:block;width:40%;height:100%;border-radius:4px;background:linear-gradient(90deg,var(--acc),var(--ok));animation:run 1.1s ease-in-out infinite}
+  @keyframes run{0%{transform:translateX(-120%)}100%{transform:translateX(420%)}}
+  #err{display:none;position:fixed;inset:0;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:32px;text-align:center;background:var(--bg)}
+  #err.on{display:flex}
+  #err h2{margin:0;font-size:18px}
+  #err p{margin:0;color:var(--muted);font-size:13px;line-height:1.7;max-width:420px}
+  .btn{display:inline-block;margin-top:8px;padding:11px 22px;border-radius:12px;background:var(--acc);color:#1a1200;font-weight:700;text-decoration:none;font-size:14px;border:0;cursor:pointer}
+  .btn.ghost{background:transparent;color:var(--fg);border:1px solid rgba(255,255,255,.25)}
+  .foot{position:fixed;bottom:calc(14px + env(safe-area-inset-bottom));left:0;right:0;text-align:center;color:var(--muted);font-size:11px;opacity:.8}
+</style>
+</head>
+<body>
+  <div id="splash" role="status" aria-live="polite">
+    <img src="icons/icon-192.png" alt="">
+    <h1>ระบบติดตามโครงการก่อสร้างทางหลวง</h1>
+    <p>สำนักก่อสร้างทางที่ 2 · กรมทางหลวง</p>
+    <div class="bar"><i></i></div>
+    <div class="foot" id="hint">กำลังเชื่อมต่อ…</div>
+  </div>
+
+  <div id="err">
+    <img src="icons/icon-192.png" alt="" style="width:72px;height:72px;border-radius:18px;opacity:.9">
+    <h2 id="errTitle">เชื่อมต่อไม่ได้</h2>
+    <p id="errMsg">ตรวจสอบอินเทอร์เน็ต แล้วลองใหม่อีกครั้ง</p>
+    <button class="btn" onclick="location.reload()">ลองใหม่</button>
+    <a class="btn ghost" id="openDirect" href="#" target="_blank" rel="noopener">เปิดในเบราว์เซอร์แทน</a>
+  </div>
+
+  <iframe id="app" title="ระบบติดตามโครงการก่อสร้างทางหลวง" allow="geolocation; camera; clipboard-write; fullscreen" referrerpolicy="no-referrer-when-downgrade"></iframe>
+
+<script>
+(function () {
+  var f = document.getElementById('app'), sp = document.getElementById('splash'), er = document.getElementById('err'), hint = document.getElementById('hint');
+  document.getElementById('openDirect').href = APP_URL;
+
+  function fail(title, msg) { sp.classList.add('off'); er.classList.add('on'); document.getElementById('errTitle').textContent = title; document.getElementById('errMsg').textContent = msg; }
+  function shown() { if (f.classList.contains('on')) return; f.classList.add('on'); setTimeout(function () { sp.classList.add('off'); }, 250); }
+
+  if (APP_URL.indexOf('https://') !== 0) { fail('ยังไม่ได้ตั้งค่าลิงก์แอป', 'เปิดไฟล์ index.html แล้ววางลิงก์ /exec ของ Apps Script ที่บรรทัด APP_URL (บนสุดของไฟล์)'); }
+  else if (!navigator.onLine) { fail('ไม่มีอินเทอร์เน็ต', 'แอปนี้ต้องใช้อินเทอร์เน็ต — เชื่อมต่อแล้วกด "ลองใหม่"'); }
+  else {
+    // ส่งพารามิเตอร์บอกแอปว่าเปิดจากไอคอน (เผื่อใช้สถิติ/ปรับ UI ภายหลัง)
+    f.src = APP_URL + (APP_URL.indexOf('?') > -1 ? '&' : '?') + 'pwa=1';
+    f.addEventListener('load', shown);
+    setTimeout(function () { hint.textContent = 'ระบบตอบช้ากว่าปกติ กำลังรอ…'; }, 6000);
+    // Apps Script บางครั้งโหลดนาน (cold start) — รอได้ถึง 40 วินาทีก่อนแจ้งปัญหา
+    setTimeout(function () { if (!f.classList.contains('on')) fail('ระบบไม่ตอบสนอง', 'Google Apps Script อาจกำลังเริ่มทำงาน ลองใหม่อีกครั้ง หรือเปิดในเบราว์เซอร์'); }, 40000);
+  }
+
+  // กลับมาออนไลน์ → โหลดใหม่อัตโนมัติ
+  window.addEventListener('online', function () { if (er.classList.contains('on')) location.reload(); });
+
+  if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js').catch(function () {}); }
+})();
+</script>
+</body>
+</html>
